@@ -43,11 +43,15 @@ func githubBootContext() (*github.Client, context.Context) {
 	return github.NewClient(tc), ctx
 }
 
-func warningMsg(msg string) {
+func warningMsg(err error, msg string) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+	}
+
 	if werror != nil && *werror {
 		log.Fatal(msg)
 	} else {
-		fmt.Fprintf(os.Stderr, msg)
+		fmt.Fprintln(os.Stderr, msg)
 	}
 }
 
@@ -61,7 +65,7 @@ func getGithubOrgMembers() []string {
 	for {
 		users, resp, err := githubClient.Organizations.ListMembers(githubClientCtx, *githubOrg, opt)
 		if err != nil {
-			warningMsg(fmt.Sprintf("[warning] Github Organisation %s not found", githubOrg))
+			warningMsg(err, fmt.Sprintf("[warning] Github Organisation \"%s\" not found", *githubOrg))
 			break
 		}
 
@@ -82,7 +86,7 @@ func getGithubTeamMembers(teamName string) []string {
 	// get team id from slug
 	team, _, err := githubClient.Teams.GetTeamBySlug(githubClientCtx, *githubOrg, teamName)
 	if err != nil {
-		warningMsg(fmt.Sprintf("[warning] Github Organisation %s not found.\n", githubOrg))
+		warningMsg(err, fmt.Sprintf("[warning] Github Organisation \"%s\" not found.\n", *githubOrg))
 		return []string{}
 	}
 
@@ -95,7 +99,7 @@ func getGithubTeamMembers(teamName string) []string {
 	for {
 		users, resp, err := githubClient.Teams.ListTeamMembers(githubClientCtx, team.GetID(), opt)
 		if err != nil {
-			warningMsg(fmt.Sprintf("[warning] Github teams %s not found.\n", teamName))
+			warningMsg(err, fmt.Sprintf("[warning] Github teams \"%s\" not found.\n", teamName))
 			break
 		}
 
@@ -114,7 +118,7 @@ func getGithubTeamMembers(teamName string) []string {
 func getUserSSHKeys(username string) []string {
 	resp, err := http.Get("https://github.com/" + username + ".keys")
 	if err != nil {
-		warningMsg(fmt.Sprintf("[warning] Github Organisation %s not found.\n", githubOrg))
+		warningMsg(err, fmt.Sprintf("[warning] Failed to fetch public ssh key of user \"%s\"", username))
 		return []string{}
 	}
 
@@ -150,7 +154,7 @@ func checkFlags() {
 
 	// warnings
 	if len(*githubOrg) > 0 && len(*githubToken) == 0 {
-		fmt.Fprintf(os.Stderr, "[warning] You provided --github-org without --github-token: organization private members won't be fetched.\n")
+		fmt.Fprintln(os.Stderr, "[warning] You provided --github-org without --github-token: organization private members won't be fetched.")
 	}
 }
 
