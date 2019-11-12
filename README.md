@@ -43,9 +43,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDhDlAK8ewcwCTOv6xZHAAJK36QJ1ljJyn9/GiDTHE9
 
 ```bash
 $ github-team-ssh-keys --github-token XXXXXXXXXXXXXXX \
-                       --github-org epitech
-
-[...]
+                       --github-org epitech \
+                            > /root/.ssh/authorized_keys
 ```
 
 ### All members of an organizations being part of teams "root" and "sre"
@@ -54,9 +53,8 @@ $ github-team-ssh-keys --github-token XXXXXXXXXXXXXXX \
 $ github-team-ssh-keys --github-token XXXXXXXXXXXXXXX \
                        --github-org epitech \
                        --github-team root \
-                       --github-team sre
-
-[...]
+                       --github-team sre \
+                            > /root/.ssh/authorized_keys
 ```
 
 ### All members of an organizations excluding me ;)
@@ -64,9 +62,8 @@ $ github-team-ssh-keys --github-token XXXXXXXXXXXXXXX \
 ```bash
 $ github-team-ssh-keys --github-token XXXXXXXXXXXXXXX \
                        --github-org epitech \
-                       --exclude-github-user samber
-
-[...]
+                       --exclude-github-user samber \
+                            > /root/.ssh/authorized_keys
 ```
 
 ## Contribute
