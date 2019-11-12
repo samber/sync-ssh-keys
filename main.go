@@ -137,7 +137,10 @@ func getUserSSHKeys(username string) []string {
 }
 
 func output(sshKeys []string) {
-	fmt.Println(strings.Join(sshKeys, "\n\n"))
+	if len(sshKeys) > 0 {
+		fmt.Println("#\n# Generated with https://github.com/samber/github-team-ssh-keys\n#\n")
+		fmt.Println(strings.Join(sshKeys, "\n\n"))
+	}
 }
 
 func checkFlags() {
@@ -159,7 +162,7 @@ func checkFlags() {
 }
 
 func main() {
-	kingpin.Version("0.1.0")
+	kingpin.Version("0.2.0")
 	kingpin.Parse()
 	checkFlags()
 
