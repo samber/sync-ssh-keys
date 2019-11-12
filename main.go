@@ -137,7 +137,7 @@ func getUserSSHKeys(username string) []string {
 }
 
 func output(sshKeys []string) {
-	fmt.Println(strings.Join(sshKeys, "\n"))
+	fmt.Println(strings.Join(sshKeys, "\n\n"))
 }
 
 func checkFlags() {
