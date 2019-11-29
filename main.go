@@ -1,211 +1,122 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
-	"strings"
+	"sync-ssh-keys/sources"
+	src "sync-ssh-keys/sources"
 
-	"github.com/google/go-github/v28/github"
-	"github.com/thoas/go-funk"
-	"golang.org/x/oauth2"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	githubToken        = kingpin.Flag("github-token", "Github oauth2 token.").Envar("GITHUB_TOKEN").String()
-	githubOrg          = kingpin.Flag("github-org", "Github organization name.").String()
-	githubTeams        = kingpin.Flag("github-team", "List of teams allowed to access server.").Strings()
-	githubUsers        = kingpin.Flag("github-user", "List of usernames allowed to access server.").Strings()
-	excludeGithubUsers = kingpin.Flag("exclude-github-user", "List of users to explicitly exclude.").Strings()
-
-	werror = kingpin.Flag("Werror", "Treat warning as errors. Fatal error if organization, team or user does not exist.").Bool()
-
-	githubClient    *github.Client
-	githubClientCtx context.Context
+	Version string
+	Build   string
 )
 
-func githubBootContext() (*github.Client, context.Context) {
-	ctx := context.Background()
+var (
+	outputPath = kingpin.Flag("output", "Write output to <file>. Default to stdout").Short('o').String()
+	wError     = kingpin.Flag("Werror", "Treat warning as errors. Fatal error if organization, team or user does not exist.").String()
 
-	if *githubToken == "" {
-		return github.NewClient(nil), ctx
+	localPath = kingpin.Flag("local-path", "Path to a local authorized_keys file. It can be useful in case of network failure ;)").String()
+
+	githubEndpoint         = kingpin.Flag("github-endpoint", "Github Enterprise endpoint.").Envar("GITHUB_ENDPOINT").String()
+	githubToken            = kingpin.Flag("github-token", "Github personal token.").Envar("GITHUB_TOKEN").String()
+	githubOrg              = kingpin.Flag("github-org", "Github organization name.").String()
+	githubTeams            = kingpin.Flag("github-team", "Team(s) allowed to access server.").Strings()
+	githubUsernames        = kingpin.Flag("github-username", "Username(s) allowed to access server.").Strings()
+	excludeGithubUsernames = kingpin.Flag("exclude-github-username", "Username(s) to explicitly exclude.").Strings()
+
+	gitlabEndpoint         = kingpin.Flag("gitlab-endpoint", "Gitlab endpoint.").Envar("GITLAB_ENDPOINT").String()
+	gitlabToken            = kingpin.Flag("gitlab-token", "Gitlab personal token.").Envar("GITLAB_TOKEN").String()
+	gitlabGroups           = kingpin.Flag("gitlab-group", "Group allowed to access server.").Strings()
+	gitlabUsernames        = kingpin.Flag("gitlab-username", "Username(s) allowed to access server.").Strings()
+	excludeGitlabUsernames = kingpin.Flag("exclude-gitlab-username", "Username(s) to explicitly exclude.").Strings()
+)
+
+func argvToNullable() {
+	// main
+	if outputPath != nil && len(*outputPath) == 0 {
+		outputPath = nil
 	}
 
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: *githubToken},
-	)
-	tc := oauth2.NewClient(ctx, ts)
+	// local
+	if localPath != nil && len(*localPath) == 0 {
+		localPath = nil
+	}
 
-	return github.NewClient(tc), ctx
+	// github
+	if githubEndpoint != nil && len(*githubEndpoint) == 0 {
+		githubEndpoint = nil
+	}
+	if githubToken != nil && len(*githubToken) == 0 {
+		githubToken = nil
+	}
+	if githubOrg != nil && len(*githubOrg) == 0 {
+		githubOrg = nil
+	}
+
+	// gitlab
+	if gitlabEndpoint != nil && len(*gitlabEndpoint) == 0 {
+		gitlabEndpoint = nil
+	}
 }
 
-func warningMsg(err error, msg string) {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+func checkInputErrors(srcs []sources.Source) {
+	if len(srcs) == 0 {
+		kingpin.FatalUsage("Please provide a key source.")
 	}
 
-	if werror != nil && *werror {
-		log.Fatal(msg)
-	} else {
-		fmt.Fprintln(os.Stderr, msg)
-	}
-}
-
-func getGithubOrgMembers() []string {
-	// fetch 100 results per api call
-	opt := &github.ListMembersOptions{
-		ListOptions: github.ListOptions{PerPage: 100},
-	}
-
-	var allUsers []*github.User
-	for {
-		users, resp, err := githubClient.Organizations.ListMembers(githubClientCtx, *githubOrg, opt)
-		if err != nil {
-			warningMsg(err, fmt.Sprintf("[warning] Github Organisation \"%s\" not found", *githubOrg))
-			break
+	// Check data source errors
+	for _, src := range srcs {
+		if err := src.CheckInputErrors(); err != "" {
+			kingpin.FatalUsage(err)
 		}
-
-		allUsers = append(allUsers, users...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opt.Page = resp.NextPage
-	}
-
-	return funk.Map(allUsers, func(user *github.User) string {
-		return user.GetLogin()
-	}).([]string)
-
-}
-
-func getGithubTeamMembers(teamName string) []string {
-	// get team id from slug
-	team, _, err := githubClient.Teams.GetTeamBySlug(githubClientCtx, *githubOrg, teamName)
-	if err != nil {
-		warningMsg(err, fmt.Sprintf("[warning] Github Organisation \"%s\" not found.\n", *githubOrg))
-		return []string{}
-	}
-
-	// fetch 100 results per api call
-	opt := &github.TeamListTeamMembersOptions{
-		ListOptions: github.ListOptions{PerPage: 100},
-	}
-
-	var allUsers []*github.User
-	for {
-		users, resp, err := githubClient.Teams.ListTeamMembers(githubClientCtx, team.GetID(), opt)
-		if err != nil {
-			warningMsg(err, fmt.Sprintf("[warning] Github teams \"%s\" not found.\n", teamName))
-			break
-		}
-
-		allUsers = append(allUsers, users...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opt.Page = resp.NextPage
-	}
-
-	return funk.Map(allUsers, func(user *github.User) string {
-		return user.GetLogin()
-	}).([]string)
-}
-
-func getUserSSHKeys(username string) []string {
-	resp, err := http.Get("https://github.com/" + username + ".keys")
-	if err != nil {
-		warningMsg(err, fmt.Sprintf("[warning] Failed to fetch public ssh key of user \"%s\"", username))
-		return []string{}
-	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-	sshKeys := strings.Split(string(body), "\n")
-
-	// removing empty lines
-	sshKeys = funk.Filter(sshKeys, func(sshKey string) bool {
-		return len(sshKey) > 0
-	}).([]string)
-
-	// adding ssh key owner
-	return funk.Map(sshKeys, func(sshKey string) string {
-		return fmt.Sprintf("%s %s@github-team-ssh-key", sshKey, username)
-	}).([]string)
-}
-
-func output(sshKeys []string) {
-	if len(sshKeys) > 0 {
-		fmt.Println("#\n# Generated with https://github.com/samber/github-team-ssh-keys\n#\n")
-		fmt.Println(strings.Join(sshKeys, "\n\n"))
-	}
-}
-
-func checkFlags() {
-	// error
-	if len(*githubOrg)+len(*githubTeams)+len(*githubUsers) == 0 {
-		kingpin.FatalUsage("--github-org, --github-team or --github-user must be provided.\n")
-	}
-	if len(*githubTeams) > 0 && len(*githubOrg) == 0 {
-		kingpin.FatalUsage("--github-team cannot be provided without --github-org.\n")
-	}
-	if len(*githubTeams) > 0 && len(*githubToken) == 0 {
-		kingpin.FatalUsage("--github-team cannot be provided without --github-token.\n")
-	}
-
-	// warnings
-	if len(*githubOrg) > 0 && len(*githubToken) == 0 {
-		fmt.Fprintln(os.Stderr, "[warning] You provided --github-org without --github-token: organization private members won't be fetched.")
 	}
 }
 
 func main() {
-	kingpin.Version("0.2.0")
+	kingpin.Version(Version + "-" + Build)
 	kingpin.Parse()
-	checkFlags()
 
-	githubClient, githubClientCtx = githubBootContext()
-	if githubClient == nil {
-		log.Fatal("Invalid Github client")
+	argvToNullable()
+
+	srcs := []sources.Source{}
+
+	// Init Local key source
+	if localPath != nil {
+		srcs = append(srcs, src.NewLocalSource(
+			*localPath,
+		))
+	}
+	// Init Github key source
+	if githubOrg != nil || len(*githubTeams) > 0 || len(*githubUsernames) > 0 || len(*excludeGithubUsernames) > 0 {
+		srcs = append(srcs, src.NewGithubSource(
+			githubEndpoint,
+			githubToken,
+			githubOrg,
+			*githubTeams,
+			*githubUsernames,
+			*excludeGithubUsernames,
+		))
+	}
+	// Init Gitlab key source
+	if len(*gitlabGroups) > 0 || len(*gitlabUsernames) > 0 || len(*excludeGitlabUsernames) > 0 {
+		srcs = append(srcs, src.NewGitlabSource(
+			gitlabEndpoint,
+			*gitlabToken,
+			*gitlabGroups,
+			*gitlabUsernames,
+			*excludeGitlabUsernames,
+		))
 	}
 
-	var usernames []string
+	checkInputErrors(srcs)
 
-	// get users from teams
-	if githubOrg != nil && len(*githubOrg) > 0 {
-		if githubTeams != nil && len(*githubTeams) > 0 {
-			for _, team := range *githubTeams {
-				usernames = append(usernames, getGithubTeamMembers(team)...)
-			}
-		} else {
-			usernames = append(usernames, getGithubOrgMembers()...)
-		}
+	// fetch keys 🚀
+	keys := map[string][]string{}
+	for _, src := range srcs {
+		keys[src.GetName()] = src.GetKeys()
 	}
-
-	// get users provided in cli
-	if githubUsers != nil {
-		usernames = append(usernames, *githubUsers...)
-	}
-
-	// removes duplicates
-	usernames = funk.Uniq(usernames).([]string)
-
-	// ban some people ;)
-	if excludeGithubUsers != nil {
-		usernames = funk.Filter(usernames, func(username string) bool {
-			return !funk.Contains(*excludeGithubUsers, username)
-		}).([]string)
-	}
-
-	// get ssh keys from users
-	var sshKeys []string
-	funk.ForEach(usernames, func(username string) {
-		sshKeys = append(sshKeys, getUserSSHKeys(username)...)
-	})
-	sshKeys = funk.Uniq(sshKeys).([]string)
 
 	// prints ssh keys
-	output(sshKeys)
+	PrintKeys(outputPath, keys)
 }
