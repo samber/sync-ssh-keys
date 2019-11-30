@@ -1,6 +1,6 @@
-# Github teams ssh keys
+# Sync ssh keys
 
-Sync public ssh keys to `~/.ssh/authorized_keys`, based on Github/Gitlab teams membership.
+Sync public ssh keys to `~/.ssh/authorized_keys`, based on Github/Gitlab organization membership.
 
 ## Install
 
@@ -118,7 +118,7 @@ $ sync-ssh-keys --github-token XXXXXXXXXXXXXXX \
                         > /root/.ssh/authorized_keys
 ```
 
-### All members of an organizations being part of teams "root" and "sre"
+### All members of teams "root" and "sre", of a Github organizations
 
 ```bash
 $ sync-ssh-keys --github-token XXXXXXXXXXXXXXX \
@@ -128,7 +128,7 @@ $ sync-ssh-keys --github-token XXXXXXXXXXXXXXX \
                         > /root/.ssh/authorized_keys
 ```
 
-### All members of an organizations excluding me ;)
+### All members of an organizations excluding myself ;)
 
 ```bash
 $ sync-ssh-keys --github-token XXXXXXXXXXXXXXX \
@@ -145,14 +145,14 @@ $ sync-ssh-keys --github-username samber \
                         > /root/.ssh/authorized_keys
 ```
 
-### Pass destination as parameter
+### Pass destination file as parameter
 
 ```bash
 $ sync-ssh-keys --github-username samber \
                 -o /root/.ssh/authorized_keys
 ```
 
-### Gitlab and Github and Local providers
+### Gitlab + Github + Local providers
 
 ```bash
 $ sync-ssh-keys --github-username samber \
@@ -202,7 +202,7 @@ $ sync-ssh-keys --github-token XXXXXXXXXXXXXXX \
 
 50 servers * (1 org + 2 teams + 3 users + 10 users) = 800 requests
 
-### Advice
+### Trade-off
 
 If you have too many servers and/or too many users:
 
@@ -219,7 +219,7 @@ $ make run
 
 ```bash
 $ make release
-$ make release
+$ make docker-release
 ```
 
 ## License

@@ -24,7 +24,7 @@ docker-release: docker-build
 	docker push $(DOCKER_IMAGE):${VERSION}
 
 run-dev:
-	GO111MODULE=on go run -v $(LDFLAGS) ${SRC} --github-org epitech --github-team sysadmin
+	GO111MODULE=on go run -v $(LDFLAGS) ${SRC} --github-username samber
 
 clean:
 	rm -f $(BIN)
