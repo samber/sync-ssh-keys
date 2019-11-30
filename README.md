@@ -16,6 +16,13 @@ $ curl -o /usr/local/bin/sync-ssh-keys \
 $ chmod +x /usr/local/bin/sync-ssh-keys
 ```
 
+or 
+
+```bash
+$ docker pull samber/sync-ssh-keys:0.3.0
+$ docker run --rm samber/sync-ssh-keys:0.3.0 --github-username samber
+```
+
 ### Sync using a crontask
 
 ```bash
@@ -38,10 +45,13 @@ usage: sync-ssh-keys [<flags>]
 Flags:
       --help                   Show context-sensitive help (also try --help-long and --help-man).
 
+
   -o, --output=OUTPUT          Write output to <file>. Default to stdout
       --Werror=WERROR          Treat warning as errors. Fatal error if organization, team or user does not exist.
 
+
       --local-path=LOCAL-PATH  Path to a local authorized_keys file. It can be useful in case of network failure ;)
+
 
       --github-endpoint=GITHUB-ENDPOINT
                                Github Enterprise endpoint.
@@ -55,6 +65,7 @@ Flags:
       --exclude-github-username=EXCLUDE-GITHUB-USERNAME ...
                                Username(s) to explicitly exclude.
 
+
       --gitlab-endpoint=GITLAB-ENDPOINT
                                Gitlab endpoint.
       --gitlab-token=GITLAB-TOKEN
@@ -66,8 +77,8 @@ Flags:
       --exclude-gitlab-username=EXCLUDE-GITLAB-USERNAME ...
                                Username(s) to explicitly exclude.
 
-      --version                Show application version.
 
+      --version                Show application version.
 ```
 
 ### Simple user

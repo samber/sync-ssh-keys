@@ -12,3 +12,4 @@
 *.out
 
 sync-ssh-keys
+sync-ssh-keys_*

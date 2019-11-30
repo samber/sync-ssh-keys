@@ -10,15 +10,15 @@ LDFLAGS=-ldflags "-X=main.Version=$(VERSION) -X=main.Build=$(BUILD_ID)"
 all: build
 
 build:
-	GO111MODULE=on go build -v $(LDFLAGS) -o $(BIN) $(SRC)
+	CGO_ENABLED=0 GO111MODULE=on go build -v $(LDFLAGS) -o $(BIN) $(SRC)
 
 docker-build:
 	docker build -t $(DOCKER_IMAGE):${VERSION} .
 
-release:
-	GOOS=linux GOARCH=arm64 GO111MODULE=on go build $(LDFLAGS) -o $(BIN)_$(VERSION)_linux-amd64 $(SRC)
-	GOOS=linux GOARCH=arm GO111MODULE=on go build $(LDFLAGS) -o $(BIN)_$(VERSION)_linux-arm $(SRC)
-	GOOS=freebsd GOARCH=386 GO111MODULE=on go build $(LDFLAGS) -o $(BIN)_$(VERSION)_freebsd-386 $(SRC)
+release: deps
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 GO111MODULE=on go build $(LDFLAGS) -o $(BIN)_$(VERSION)_linux-amd64 $(SRC)
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GO111MODULE=on go build $(LDFLAGS) -o $(BIN)_$(VERSION)_linux-arm $(SRC)
+	CGO_ENABLED=0 GOOS=freebsd GOARCH=386 GO111MODULE=on go build $(LDFLAGS) -o $(BIN)_$(VERSION)_freebsd-386 $(SRC)
 
 docker-release: docker-build
 	docker push $(DOCKER_IMAGE):${VERSION}

@@ -1,6 +1,7 @@
 FROM golang:1.12-stretch AS builder
 
 ENV GO111MODULE=on
+ENV CGO_ENABLED=0
 
 # Download tools
 RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.17.1
@@ -14,6 +15,7 @@ RUN make deps
 COPY . .
 
 RUN make build
+
 # Copy binary to alpine
 FROM alpine:3.10
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
