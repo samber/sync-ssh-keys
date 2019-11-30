@@ -2,6 +2,8 @@
 
 Sync public ssh keys to `~/.ssh/authorized_keys`, based on Github/Gitlab organization membership.
 
+![diagram](./diagram.png)
+
 ## Install
 
 ```bash
