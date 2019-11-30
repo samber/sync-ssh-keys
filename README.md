@@ -5,14 +5,15 @@ Sync public ssh keys to `~/.ssh/authorized_keys`, based on Github/Gitlab organiz
 ## Install
 
 ```bash
+$ export GO111MODULE=on
 $ go get github.com/samber/sync-ssh-keys
 ```
 
 or
 
 ```bash
-$ curl -o /usr/local/bin/sync-ssh-keys \
-      https://github.com/samber/sync-ssh-keys/releases/download/v0.2.0/sync-ssh-keys_v0.3.0_linux-amd64
+$ curl -L -o /usr/local/bin/sync-ssh-keys \
+      https://github.com/samber/sync-ssh-keys/releases/download/v0.3.0/sync-ssh-keys_0.3.0_linux-amd64
 $ chmod +x /usr/local/bin/sync-ssh-keys
 ```
 
