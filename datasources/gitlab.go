@@ -1,12 +1,13 @@
-package sources
+package datasources
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"net/http"
-	logger "sync-ssh-keys/logger"
 	"time"
+
+	logger "github.com/samber/sync-ssh-keys/logger"
 
 	"github.com/thoas/go-funk"
 	gitlab "github.com/xanzy/go-gitlab"

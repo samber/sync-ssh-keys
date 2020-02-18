@@ -1,8 +1,7 @@
 package main
 
 import (
-	"sync-ssh-keys/sources"
-	src "sync-ssh-keys/sources"
+	"github.com/samber/sync-ssh-keys/datasources"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -60,7 +59,7 @@ func argvToNullable() {
 	}
 }
 
-func checkInputErrors(srcs []sources.Source) {
+func checkInputErrors(srcs []datasources.Source) {
 	if len(srcs) == 0 {
 		kingpin.FatalUsage("Please provide a key source.")
 	}
@@ -79,17 +78,17 @@ func main() {
 
 	argvToNullable()
 
-	srcs := []sources.Source{}
+	srcs := []datasources.Source{}
 
 	// Init Local key source
 	if localPath != nil {
-		srcs = append(srcs, src.NewLocalSource(
+		srcs = append(srcs, datasources.NewLocalSource(
 			*localPath,
 		))
 	}
 	// Init Github key source
 	if githubOrg != nil || len(*githubTeams) > 0 || len(*githubUsernames) > 0 || len(*excludeGithubUsernames) > 0 {
-		srcs = append(srcs, src.NewGithubSource(
+		srcs = append(srcs, datasources.NewGithubSource(
 			githubEndpoint,
 			githubToken,
 			githubOrg,
@@ -100,7 +99,7 @@ func main() {
 	}
 	// Init Gitlab key source
 	if len(*gitlabGroups) > 0 || len(*gitlabUsernames) > 0 || len(*excludeGitlabUsernames) > 0 {
-		srcs = append(srcs, src.NewGitlabSource(
+		srcs = append(srcs, datasources.NewGitlabSource(
 			gitlabEndpoint,
 			*gitlabToken,
 			*gitlabGroups,

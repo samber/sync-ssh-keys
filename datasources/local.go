@@ -1,11 +1,12 @@
-package sources
+package datasources
 
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
-	logger "sync-ssh-keys/logger"
+
+	logger "github.com/samber/sync-ssh-keys/logger"
 
 	"github.com/thoas/go-funk"
 )

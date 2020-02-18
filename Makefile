@@ -31,3 +31,5 @@ clean:
 
 deps:
 	GO111MODULE=on go mod download
+
+re: clean all

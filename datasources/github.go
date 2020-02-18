@@ -1,4 +1,4 @@
-package sources
+package datasources
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	logger "sync-ssh-keys/logger"
+	logger "github.com/samber/sync-ssh-keys/logger"
 
 	"github.com/google/go-github/v28/github"
 	"github.com/thoas/go-funk"

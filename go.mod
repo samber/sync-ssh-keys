@@ -1,4 +1,4 @@
-module sync-ssh-keys
+module github.com/samber/sync-ssh-keys
 
 go 1.13
 

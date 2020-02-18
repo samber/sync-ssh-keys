@@ -1,4 +1,4 @@
-package sources
+package datasources
 
 type Source interface {
 	GetName() string
