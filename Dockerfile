@@ -17,7 +17,7 @@ COPY . .
 RUN make build
 
 # Copy binary to alpine
-FROM alpine:3.10
+FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /app/sync-ssh-keys /bin/sync-ssh-keys
 
