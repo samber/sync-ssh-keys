@@ -15,15 +15,15 @@ or
 
 ```bash
 $ curl -L -o /usr/local/bin/sync-ssh-keys \
-      https://github.com/samber/sync-ssh-keys/releases/download/v0.4.0/sync-ssh-keys_0.4.0_linux-amd64
+      https://github.com/samber/sync-ssh-keys/releases/download/v0.5.0/sync-ssh-keys_0.5.0_linux-amd64
 $ chmod +x /usr/local/bin/sync-ssh-keys
 ```
 
 or 
 
 ```bash
-$ docker pull samber/sync-ssh-keys:0.4.0
-$ docker run --rm samber/sync-ssh-keys:0.4.0 --github-username samber
+$ docker pull samber/sync-ssh-keys:0.5.0
+$ docker run --rm samber/sync-ssh-keys:0.5.0 --github-username samber
 ```
 
 ### Sync using a crontask
