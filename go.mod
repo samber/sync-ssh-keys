@@ -15,7 +15,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/golang/protobuf v1.2.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
-	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 // indirect
+	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	google.golang.org/appengine v1.3.0 // indirect
 )
