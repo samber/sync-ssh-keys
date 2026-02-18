@@ -1,6 +1,6 @@
 module github.com/samber/sync-ssh-keys
 
-go 1.23.0
+go 1.24.0
 
 require (
 	github.com/google/go-github/v28 v28.1.1
@@ -14,5 +14,5 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 )
